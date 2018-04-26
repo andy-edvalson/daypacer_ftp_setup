@@ -1,3 +1,4 @@
 - Create a ubuntu AWS instance.
-- clone this repo: git clone
+- clone this repo: git clone https://github.com/andy-edvalson/daypacer_ftp_setup.git
 - sudo setup
+- aws configure - use preconfigured access keys, and default region us-east-1

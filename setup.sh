@@ -3,7 +3,7 @@
 add-apt-repository "deb http://archive.ubuntu.com/ubuntu $(lsb_release -sc) universe"
 add-apt-repository "deb http://archive.canonical.com/ubuntu $(lsb_release -sc) partner"
 apt-get update
-apt-get install -y pure-ftpd pureadmin
+apt-get install -y pure-ftpd pureadmin awscli
 
 sudo groupadd ftpgroup
 sudo useradd -g ftpgroup -d /dev/null -s /etc ftpuser
