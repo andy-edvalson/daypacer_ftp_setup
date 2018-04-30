@@ -18,7 +18,7 @@ sudo pure-pw mkdb
 sudo ln -s /etc/pure-ftpd/pureftpd.passwd /etc/pureftpd.passwd
 sudo ln -s /etc/pure-ftpd/pureftpd.pdb /etc/pureftpd.pdb
 sudo ln -s /etc/pure-ftpd/conf/PureDB /etc/pure-ftpd/auth/PureDB
-
+sudo echo "29799 29899" > /etc/pure-ftpd/conf/PassivePortRange
 sudo chown -hR ftpuser:ftpgroup /home/ftpusers/
 
 sudo cp pure-ftpd.conf /etc/pure-ftpd/
