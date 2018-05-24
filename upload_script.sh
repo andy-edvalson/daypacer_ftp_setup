@@ -11,7 +11,7 @@ if [[ $FILESPEC =~ $TMP_REGEX ]]
 then
   	echo "File appears to be incorrectly named, allowing 2 seconds for rename, then stripping off appended portion" >> /tmp/ftp.log
         FILESPEC="${BASH_REMATCH[1]}"
-        sleep 2
+        sleep 0.2
 	if [[ -f $FILESPEC ]]
 	then
 		echo "Fixed Filename: $FILESPEC" >> /tmp/ftp.log
