@@ -23,11 +23,12 @@ sudo chown -hR ftpuser:ftpgroup /home/ftpusers/
 
 sudo cp pure-ftpd.conf /etc/pure-ftpd/
 sudo cp upload_script.sh /usr/local/bin
+sudo cp cleanup.sh /usr/local/bin
 sudo cp launch_ftp_upload.sh /usr/local/bin
 sudo cp pure-ftpd-common /etc/default
 echo "yes" > /etc/pure-ftpd/conf/CallUploadScript
 
-#(sudo crontab -l ; echo "* * * * * /usr/local/bin/launch_ftp_upload.sh") | sort - | uniq - | sudo crontab -
+(sudo crontab -l ; echo "* 4 * * * /usr/local/bin/cleanup.sh") | sort - | uniq - | sudo crontab -
 
 /etc/init.d/pure-ftpd restart
 
