@@ -22,24 +22,25 @@ then
 fi
 
 #declare REGEX="([a-z\/])+(recording\.([0-9a-zA-Z]*)_([0-9A-Z]+)_([a-zA-Z0-9\@\.]+)_([a-zA-Z0-9\ \_]+)_([0-9]+)_([0-9]+)_([0-9]+).wav)"
-declare REGEX="([a-z\/])+(recording\.([0-9a-zA-Z]*)_([0-9A-Z]+)_([a-zA-Z0-9\@\.]+)_([a-zA-Z0-9\ \_]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
+#declare REGEX="([a-z\/])+(recording\.([0-9a-zA-Z]*)_([0-9A-Z]+)_([a-zA-Z0-9\@\.]+)_([a-zA-Z0-9\ \_]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
+declare REGEX="([a-z\/])+((recording\.)?([0-9a-zA-Z]*)_([0-9A-Z]+)_([a-zA-Z0-9\@\.]+)_([a-zA-Z0-9\ \_]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
 echo "relaying $1 to ftp.higheredgrowth.com" >> /tmp/ftp.log
 lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u edutrek,qWpVjvx^P69b*56# ftp.higheredgrowth.com; put -O / '$1'"
 
 if [[ $FILESPEC =~ $REGEX ]]
 then
         filename="${BASH_REMATCH[2]}"
-        phone="${BASH_REMATCH[3]}"
-        call="${BASH_REMATCH[4]}"
-        email="${BASH_REMATCH[5]}"
-        campaign="${BASH_REMATCH[6]}"
-        month="${BASH_REMATCH[7]}"
-        day="${BASH_REMATCH[8]}"
-        year="${BASH_REMATCH[9]}"
-        hour="${BASH_REMATCH[11]}"
-        minute="${BASH_REMATCH[12]}"
-        second="${BASH_REMATCH[13]}"
-        period="${BASH_REMATCH[14]}"
+        phone="${BASH_REMATCH[4]}"
+        call="${BASH_REMATCH[5]}"
+        email="${BASH_REMATCH[6]}"
+        campaign="${BASH_REMATCH[7]}"
+        month="${BASH_REMATCH[8]}"
+        day="${BASH_REMATCH[9]}"
+        year="${BASH_REMATCH[10]}"
+        hour="${BASH_REMATCH[12]}"
+        minute="${BASH_REMATCH[13]}"
+        second="${BASH_REMATCH[14]}"
+        period="${BASH_REMATCH[15]}"
 
         # check for matching call id
 
