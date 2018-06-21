@@ -3,8 +3,11 @@ echo "`date -u`" >> /tmp/ftp.log
 echo " $1 has been received." >> /tmp/ftp.log
 #echo "`date -u` `aws s3 cp $1 s3://daypacer-incoming-recordings`" >> /tmp/ftp.log
 
+declare REGEX="([a-z\/])+((recording\.)?([0-9a-zA-Z]*)_([0-9A-Z]+)_([a-zA-Z0-9\@\.]+)_([a-zA-Z0-9\ \_]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
 declare TMP_REGEX="(.*)(\.tmp[0-9]+)$"
 declare FILESPEC=$1
+declare S3_BUCKET='daypacer_incoming_recordings'
+declare EDUMAX_TAG_NAME='edumax_status'
 
 # Temporary hack for five9 upload silliness
 if [[ $FILESPEC =~ $TMP_REGEX ]]
@@ -21,9 +24,15 @@ then
 	fi
 fi
 
-#declare REGEX="([a-z\/])+(recording\.([0-9a-zA-Z]*)_([0-9A-Z]+)_([a-zA-Z0-9\@\.]+)_([a-zA-Z0-9\ \_]+)_([0-9]+)_([0-9]+)_([0-9]+).wav)"
-#declare REGEX="([a-z\/])+(recording\.([0-9a-zA-Z]*)_([0-9A-Z]+)_([a-zA-Z0-9\@\.]+)_([a-zA-Z0-9\ \_]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
-declare REGEX="([a-z\/])+((recording\.)?([0-9a-zA-Z]*)_([0-9A-Z]+)_([a-zA-Z0-9\@\.]+)_([a-zA-Z0-9\ \_]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
+LENGTH=`sox "$1" -n stat 2>&1 | sed -n 's#^Length (seconds):[^0-9]*\([0-9.]*\)$#\1#p' | awk '{print int($1+0.5)}'`
+echo "length is ${LENGTH}"
+if (( ${LENGTH} >= 120 ))
+then
+   declare E_STATUS=sent
+else
+   declare E_STATUS=too_short
+fi
+
 echo "relaying $1 to ftp.higheredgrowth.com" >> /tmp/ftp.log
 lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u edutrek,qWpVjvx^P69b*56# ftp.higheredgrowth.com; put -O / '$1'"
 
@@ -42,14 +51,13 @@ then
         second="${BASH_REMATCH[14]}"
         period="${BASH_REMATCH[15]}"
 
-        # check for matching call id
-
-
-
-        output="s3://daypacer-incoming-recordings/Recordings/$year/$month/$day/$campaign/$filename"
+        output="s3://${S3_BUCKET}/Recordings/$year/$month/$day/$campaign/$filename"
         echo "moving $FILESPEC to $output" >> /tmp/ftp.log
         aws s3 mv "$FILESPEC" "$output"
 
+        # Adding tagging
+        TAGGING="TagSet=[{Key=${EDUMAX_TAG_NAME},Value=${E_STATUS}}]"
+        aws s3api put-object-tagging --bucket ${S3_BUCKET} --key "Recordings/$year/$month/$day/$campaign/$filename" --tagging "${TAGGING}"
 fi
 
 echo "" >> /tmp/ftp.log

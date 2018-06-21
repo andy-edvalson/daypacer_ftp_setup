@@ -22,8 +22,6 @@ do
   # if file still exists
   if [[ -f $f ]]
   then
-
-      # ... loop body
     if [[ $f =~ $REGEX ]]
     then
       filename="${BASH_REMATCH[2]}"
@@ -41,10 +39,10 @@ do
 
   echo $f
       echo ${call}
-
       count=`find ${IN_PATH} -name "*.wav" -type f -mmin +${MINUTE_DELAY} | grep ${call} | wc -l`
       if (( ${count} > 1 ))
       then
+        # multipart call
         echo "${count} files found in call ${call}, merging files to staging dir"
         IFS=$'\n'
 	set -v
@@ -52,6 +50,7 @@ find ${IN_PATH} -name "*.wav" -type f -mmin +${MINUTE_DELAY} | grep ${call} | so
         sox $(find ${IN_PATH} -name "*.wav" -type f -mmin +${MINUTE_DELAY} | grep ${call} | sort -n) "${OUT_PATH}/recording.${phone}_${call}_${email}_${campaign}_${month}_${day}_${year}_${hour}_${minute}_${second} ${period}.wav"
         rm $(find ${IN_PATH} -name "*.wav" -type f -mmin +${MINUTE_DELAY} | grep ${call})
       else
+        # single part call
         echo "Single call for call ${call}, moving file to staging dir"
         mv "$f" ${OUT_PATH}
       fi
