@@ -48,7 +48,7 @@ do
         IFS=$'\n'
 	set -v
         ls -tr ${IN_PATH} | grep ${call} >> /tmp/stitch.log
-        cd ${IN_PATH} && sox $(ls -tr ${IN_PATH} | grep ${call}) "${OUT_PATH}/${phone}_${call}_${email}_${campaign}_${month}_${day}_${year}_${hour}_${minute}_${second} ${period}.wav"
+        cd ${IN_PATH} && sox $(ls -tr ${IN_PATH} | grep ${call}) "${OUT_PATH}/${phone}_${ani}_${call}_${email}_${campaign}_${month}_${day}_${year}_${hour}_${minute}_${second} ${period}.wav"
 	rm $(find ${IN_PATH} -name "*.wav" -type f | grep ${call})
       else
         # single part call
