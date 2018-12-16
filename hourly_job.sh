@@ -1,10 +1,16 @@
 #!/bin/bash
 set -v
 
+declare AWS_CLI='/usr/local/bin/aws'
+declare S3_LOGS='/var/log/s3.log'
+
 declare REGEX="([a-z\/]+)?((recording\.)?([0-9]{10}|Unavailable)_?([0-9]{10}|Unavailable)?_([0-9A-Z]+)_([a-zA-Z0-9\@\._]+.[com|net|org])_([a-zA-Z0-9\ \_]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
 declare OUT_PATH="/data/staging"
 declare IN_PATH="/data/recordings"
 declare MINUTE_DELAY=60
+
+declare CNS_REGEX="([a-z\/]+)CNS_([0-9-]+)_([0-9:]+)_([0-9]+).wav"  # 1: Path  2: Date  3: Time  4: Phone
+declare CNS_S3_BUCKET="CNS_Recordings"
 
 if [ ! -d $OUT_PATH ]
 then
@@ -22,6 +28,15 @@ do
   # if file still exists
   if [[ -f $f ]]
   then
+
+    if [[ $f =~ $CNS_REGEX ]]
+    then
+      $output="s3://${CNS_S3_BUCKET}"
+      echo "moving $f to $output" >> ${S3_LOGS}
+      ${AWS_CLI} s3 mv "$f" "$output" >> ${S3_LOGS}
+      continue
+    fi
+
     if [[ $f =~ $REGEX ]]
     then
       filename="${BASH_REMATCH[2]}"
