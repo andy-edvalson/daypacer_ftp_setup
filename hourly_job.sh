@@ -9,7 +9,7 @@ declare OUT_PATH="/data/staging"
 declare IN_PATH="/data/recordings"
 declare MINUTE_DELAY=60
 
-declare CNS_REGEX="([a-z\/]+)CNS_([0-9-]+)_([0-9:\sAMP]+)_([0-9]+).wav"  # 1: Path  2: Date  3: Time  4: Phone
+declare CNS_REGEX="([a-z\/]+)CNS_([0-9-]+)_([0-9:\ AMP]+)_([0-9]+).wav"  # 1: Path  2: Date  3: Time  4: Phone
 declare CNS_S3_BUCKET="cns-recordings"
 
 if [ ! -d $OUT_PATH ]
@@ -31,7 +31,7 @@ do
 
     if [[ $f =~ $CNS_REGEX ]]
     then
-      $output="s3://${CNS_S3_BUCKET}"
+      output="s3://${CNS_S3_BUCKET}"
       echo "moving $f to $output" >> ${S3_LOGS}
       ${AWS_CLI} s3 mv "$f" "$output" >> ${S3_LOGS}
       continue
