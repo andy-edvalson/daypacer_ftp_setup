@@ -33,7 +33,19 @@ if (( ${LENGTH} >= 120 ))
 then
 	echo "relaying $1 to ftp.higheredgrowth.com" >> /tmp/ftp.log
 	lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u edutrek,qWpVjvx^P69b*56# ftp.higheredgrowth.com; put -O / '$1'"
-   	declare E_STATUS=sent
+
+	echo "relaying $1 to ftp.higheredgrowth.com (candid maven)" >> /tmp/ftp.log
+	lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u \"Candid Maven\",\"T,MQv'yq*Y4h][L/\" ftp.higheredgrowth.com; put -O / '$1'"
+  
+	echo "relaying $1 to upload.leadhoop.com (daypacer)" >> /tmp/ftp.log
+	lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u daypacer_dialer,\"g)8%L?&?}FhWC[2x55]\\\" upload.leadhoop.com; put -O / '$1'"
+	
+	echo "relaying $1 to upload.leadhoop.com (path 56)" >> /tmp/ftp.log
+	lftp -c "set ftp:ssl-allow yes; set ssl:verify-certificate false;  set xfer:log 1; set xfer:log-file /tmp/ftp.log; open -u path_56_dialer,\"Jts^.h.,Ws(3u~z>?LxD\" upload.leadhoop.com; put -O / '$1'"
+	
+	echo "relaying $1 to upload.providemedia.com" >> /tmp/ftp.log
+	lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/ftp.log; open -u YourDegreeHelper_796,\"@DUG#8Zd,]pf\`d}\\\"(\"/\" upload.providemedia.com; put -O / '$1'"
+	declare E_STATUS=sent
 else
    declare E_STATUS=too_short
    echo "Not sending $1 to edumax (too short)" >> /tmp/ftp.log
