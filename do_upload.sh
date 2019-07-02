@@ -3,7 +3,7 @@ echo "`date -u`" >> /tmp/ftp.log
 echo " $1 has been received." >> /tmp/ftp.log
 #echo "`date -u` `aws s3 cp $1 s3://daypacer-incoming-recordings`" >> /tmp/ftp.log
 
-declare REGEX="([a-z\/]+)?((recording\.)?([0-9]{10}|Unavailable)_?([0-9]{10}|Unavailable)?_([0-9A-Z]+)_([a-zA-Z0-9\@\._]+.[com|net|org])_([a-zA-Z0-9\ \_\-]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
+declare REGEX="([a-z\/]+)?((recording\.)?([0-9]{10}|Unavailable)_?([0-9]{10}|Unavailable)?_([0-9A-Z]+)_([a-zA-Z0-9\-\@\._]+.[com|net|org])_([a-zA-Z0-9\ \_\-]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
 declare TMP_REGEX="(.*)(\.tmp[0-9]+)$"
 declare FILESPEC=$1
 declare S3_BUCKET='daypacer-incoming-recordings'
@@ -27,29 +27,6 @@ then
 	fi
 fi
 
-LENGTH=`sox "$1" -n stat 2>&1 | sed -n 's#^Length (seconds):[^0-9]*\([0-9.]*\)$#\1#p' | awk '{print int($1+0.5)}'`
-echo "length is ${LENGTH}"
-if (( ${LENGTH} >= 120 ))
-then
-	echo "relaying $1 to ftp.higheredgrowth.com" >> /tmp/ftp.log
-	lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u edutrek,qWpVjvx^P69b*56# ftp.higheredgrowth.com; put -O / '$1'"
-
-	echo "relaying $1 to ftp.higheredgrowth.com (candid maven)" >> /tmp/ftp.log
-	lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u \"Candid Maven\",\"T,MQv'yq*Y4h][L/\" ftp.higheredgrowth.com; put -O / '$1'"
-  
-	echo "relaying $1 to upload.leadhoop.com (daypacer)" >> /tmp/ftp.log
-	lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u daypacer_dialer,\"g)8%L?&?}FhWC[2x55]\\\" upload.leadhoop.com; put -O / '$1'"
-	
-	echo "relaying $1 to upload.leadhoop.com (path 56)" >> /tmp/ftp.log
-	lftp -c "set ftp:ssl-allow yes; set ssl:verify-certificate false;  set xfer:log 1; set xfer:log-file /tmp/ftp.log; open -u path_56_dialer,\"Jts^.h.,Ws(3u~z>?LxD\" upload.leadhoop.com; put -O / '$1'"
-	
-	echo "relaying $1 to upload.providemedia.com" >> /tmp/ftp.log
-	lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/ftp.log; open -u YourDegreeHelper_796,\"@DUG#8Zd,]pf\`d}\\\"(\"/\" upload.providemedia.com; put -O / '$1'"
-	declare E_STATUS=sent
-else
-   declare E_STATUS=too_short
-   echo "Not sending $1 to edumax (too short)" >> /tmp/ftp.log
-fi
 
 
 if [[ $FILESPEC =~ $REGEX ]]
@@ -68,6 +45,40 @@ then
         second="${BASH_REMATCH[15]}"
         period="${BASH_REMATCH[16]}"
 
+	OUT_FILENAME="${phone}_000_${email}_${month}_${day}_${year}.wav"
+	echo "output filename for ftp is ${OUT_FILENAME}"
+
+	LENGTH=`sox "$1" -n stat 2>&1 | sed -n 's#^Length (seconds):[^0-9]*\([0-9.]*\)$#\1#p' | awk '{print int($1+0.5)}'`
+	echo "length is ${LENGTH}"
+	if (( ${LENGTH} >= 120 ))
+	then
+set -x
+		cp "$1" /tmp/${OUT_FILENAME}
+
+		echo "relaying $1 to ftp.higheredgrowth.com" >> /tmp/ftp.log &
+		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u edutrek,qWpVjvx^P69b*56# ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'" &
+
+		echo "relaying $1 to ftp.higheredgrowth.com (candid maven)" >> /tmp/ftp.log &
+		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u \"Candid Maven\",\"T,MQv'yq*Y4h][L/\" ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'" &
+
+		echo "relaying $1 to ftp.higheredgrowth.com (provide media)" >> /tmp/ftp.log &
+		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u \"Provide Media\",\".F5\`U<Dfy6+N{(Hr\" ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'" &
+		
+		echo "relaying $1 to upload.leadhoop.com (daypacer)" >> /tmp/ftp.log &
+		lftp -c "set ftp:ssl-allow yes; set ssl:verify-certificate false; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u daypacer_dialer,g)8%L?\&?}FhWC[2x55]\\\ upload.leadhoop.com; put -O /success/new/ '/tmp/${OUT_FILENAME}'" &
+		
+		echo "relaying $1 to upload.leadhoop.com (path 56)" >> /tmp/ftp.log &
+		lftp -c "set ftp:ssl-allow yes; set ssl:verify-certificate false; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u path_56_dialer,Jts^.h.,Ws(3u~z\>?LxD upload.leadhoop.com; put -O /success/new/ '/tmp/${OUT_FILENAME}'" &
+		
+		echo "relaying $1 to upload.providemedia.com" >> /tmp/ftp.log &
+		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u YourDegreeHelper_796,@DUG#8Zd,]pf\`d}\\\\\\\"(\\\"/ upload.providemedia.com; put -O /success/new/  '/tmp/${OUT_FILENAME}'"
+
+		rm /tmp/${OUT_FILENAME}
+		declare E_STATUS=sent
+	else
+	   declare E_STATUS=too_short
+	   echo "Not sending $1 to edumax (too short)" >> /tmp/ftp.log
+	fi
 
         echo "moving $FILESPEC to /data/uploaded/$filename" >> /tmp/s3.log
 	mv "$FILESPEC" "/data/uploaded/$filename"
@@ -79,8 +90,8 @@ then
         	${AWS_CLI} s3 cp "/data/uploaded/$filename" "$output" --no-progress >> /tmp/s3.log
 
         	# Adding tagging
-        	TAGGING="TagSet=[{Key=${EDUMAX_TAG_NAME},Value=${E_STATUS}}]"
-        	${AWS_CLI} s3api put-object-tagging --bucket ${S3_BUCKET} --key "Recordings/$year/$month/$day/$campaign/$filename" --tagging "${TAGGING}" >> /tmp/s3.log
+#        	TAGGING="TagSet=[{Key=${EDUMAX_TAG_NAME},Value=${E_STATUS}}]"
+#        	${AWS_CLI} s3api put-object-tagging --bucket ${S3_BUCKET} --key "Recordings/$year/$month/$day/$campaign/$filename" --tagging "${TAGGING}" >> /tmp/s3.log
 	fi
 
  	output="s3://${S3_BUCKET_ALL}/Recordings/$year/$month/$day/$campaign/$filename"
@@ -88,8 +99,8 @@ then
         ${AWS_CLI} s3 cp "/data/uploaded/$filename" "$output" --no-progress >> /tmp/s3.log
 
         # Adding tagging
-        TAGGING="TagSet=[{Key=${EDUMAX_TAG_NAME},Value=${E_STATUS}}]"
-        ${AWS_CLI} s3api put-object-tagging --bucket ${S3_BUCKET_ALL} --key "Recordings/$year/$month/$day/$campaign/$filename" --tagging "${TAGGING}" >> /tmp/s3.log
+ #       TAGGING="TagSet=[{Key=${EDUMAX_TAG_NAME},Value=${E_STATUS}}]"
+ #       ${AWS_CLI} s3api put-object-tagging --bucket ${S3_BUCKET_ALL} --key "Recordings/$year/$month/$day/$campaign/$filename" --tagging "${TAGGING}" >> /tmp/s3.log
 
 
 fi

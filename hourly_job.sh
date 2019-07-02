@@ -4,7 +4,7 @@ set -v
 declare AWS_CLI='/usr/local/bin/aws'
 declare S3_LOGS='/var/log/s3.log'
 
-declare REGEX="([a-z\/]+)?((recording\.)?([0-9]{10}|Unavailable)_?([0-9]{10}|Unavailable)?_([0-9A-Z]+)_([a-zA-Z0-9\@\._]+.[com|net|org])_([a-zA-Z0-9\ \_\-]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
+declare REGEX="([a-z\/]+)?((recording\.)?([0-9]{10}|Unavailable)_?([0-9]{10}|Unavailable)?_([0-9A-Z]+)_([a-zA-Z0-9\@\-\._]+.[com|net|org])_([a-zA-Z0-9\ \_\-]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
 declare OUT_PATH="/data/staging"
 declare IN_PATH="/data/recordings"
 declare MINUTE_DELAY=60
@@ -63,7 +63,7 @@ do
         IFS=$'\n'
 	set -v
         ls -tr ${IN_PATH} | grep ${call} >> /tmp/stitch.log
-        cd ${IN_PATH} && sox $(ls -tr ${IN_PATH} | grep ${call}) "${OUT_PATH}/${phone}_${ani}_${call}_${email}_${campaign}_${month}_${day}_${year}_${hour}_${minute}_${second} ${period}.wav"
+	cd ${IN_PATH} && sox $(ls -tr ${IN_PATH} | grep ${call}) "${OUT_PATH}/${phone}_${ani}_${call}_${email}_${campaign}_${month}_${day}_${year}_${hour}_${minute}_${second} ${period}.wav"
 	rm $(find ${IN_PATH} -name "*.wav" -type f | grep ${call})
       else
         # single part call
