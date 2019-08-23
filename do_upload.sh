@@ -3,7 +3,8 @@ echo "`date -u`" >> /tmp/ftp.log
 echo " $1 has been received." >> /tmp/ftp.log
 #echo "`date -u` `aws s3 cp $1 s3://daypacer-incoming-recordings`" >> /tmp/ftp.log
 
-declare REGEX="([a-z\/]+)?((recording\.)?([0-9]{10}|Unavailable)_?([0-9]{10}|Unavailable)?_([0-9A-Z]+)_([a-zA-Z0-9\-\@\._]+.[com|net|org])_([a-zA-Z0-9\ \_\-]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
+#declare REGEX="([a-z\/]+)?((recording\.)?([0-9]{10}|Unavailable)_?([0-9]{10}|Unavailable)?_([0-9A-Z]+)_([a-zA-Z0-9\-\@\._]+.[com|net|org])_([a-zA-Z0-9\ \_\-]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
+declare REGEX="([a-z\/]+)?((recording\.)?([0-9]{10}|Unavailable)_?([0-9]{10}|Unavailable)?_([0-9A-Z]+)_([a-zA-Z0-9\@\._\-]+\.[comnetorg]{3})_([a-zA-Z0-9\ \_\-]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
 declare TMP_REGEX="(.*)(\.tmp[0-9]+)$"
 declare FILESPEC=$1
 declare S3_BUCKET='daypacer-incoming-recordings'
@@ -28,9 +29,10 @@ then
 fi
 
 
-
+echo $FILESPEC
 if [[ $FILESPEC =~ $REGEX ]]
 then
+	echo "matched"
         filename="${BASH_REMATCH[2]}"
         phone="${BASH_REMATCH[4]}"
         ani="${BASH_REMATCH[5]}"
@@ -56,22 +58,25 @@ set -x
 		cp "$1" /tmp/${OUT_FILENAME}
 
 		echo "relaying $1 to ftp.higheredgrowth.com" >> /tmp/ftp.log &
-		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u edutrek,qWpVjvx^P69b*56# ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'" &
+		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp_highered_edutrek.log; open -u edutrek,qWpVjvx^P69b*56# ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'" &
 
 		echo "relaying $1 to ftp.higheredgrowth.com (candid maven)" >> /tmp/ftp.log &
-		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u \"Candid Maven\",\"T,MQv'yq*Y4h][L/\" ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'" &
+		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp_highered_candidmaven.log; open -u \"Candid Maven\",\"T,MQv'yq*Y4h][L/\" ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'" &
 
 		echo "relaying $1 to ftp.higheredgrowth.com (provide media)" >> /tmp/ftp.log &
-		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u \"Provide Media\",\".F5\`U<Dfy6+N{(Hr\" ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'" &
+		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp_highered_provide.log; open -u \"Provide Media\",\".F5\`U<Dfy6+N{(Hr\" ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'" &
+
+		echo "relaying $1 to ftp.higheredgrowth.com (Entropy)" >> /tmp/ftp.log &
+		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp_highered_entropy.log; open -u Entropy,\"mUH2_Op#FrIB\" ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'" &
 		
 		echo "relaying $1 to upload.leadhoop.com (daypacer)" >> /tmp/ftp.log &
-		lftp -c "set ftp:ssl-allow yes; set ssl:verify-certificate false; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u daypacer_dialer,g)8%L?\&?}FhWC[2x55]\\\ upload.leadhoop.com; put -O /success/new/ '/tmp/${OUT_FILENAME}'" &
+		lftp -c "set ftp:ssl-allow yes; set ssl:verify-certificate false; set xfer:log 1; set xfer:log-file /tmp/lftp_leadhoop_daypacer.log; open -u daypacer_dialer,g)8%L?\&?}FhWC[2x55]\\\ upload.leadhoop.com; put -O / '/tmp/${OUT_FILENAME}'" &
 		
 		echo "relaying $1 to upload.leadhoop.com (path 56)" >> /tmp/ftp.log &
-		lftp -c "set ftp:ssl-allow yes; set ssl:verify-certificate false; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u path_56_dialer,Jts^.h.,Ws(3u~z\>?LxD upload.leadhoop.com; put -O /success/new/ '/tmp/${OUT_FILENAME}'" &
+		lftp -c "set ftp:ssl-allow yes; set ssl:verify-certificate false; set xfer:log 1; set xfer:log-file /tmp/lftp_leadhoop_path56.log; open -u path_56_dialer,Jts^.h.,Ws(3u~z\>?LxD upload.leadhoop.com; put -O / '/tmp/${OUT_FILENAME}'" &
 		
 		echo "relaying $1 to upload.providemedia.com" >> /tmp/ftp.log &
-		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp.log; open -u YourDegreeHelper_796,@DUG#8Zd,]pf\`d}\\\\\\\"(\\\"/ upload.providemedia.com; put -O /success/new/  '/tmp/${OUT_FILENAME}'"
+		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp_providemedia.log; open -u YourDegreeHelper_796,@DUG#8Zd,]pf\`d}\\\\\\\"(\\\"/ upload.providemedia.com; put -O /success/new/  '/tmp/${OUT_FILENAME}'"
 
 		rm /tmp/${OUT_FILENAME}
 		declare E_STATUS=sent
