@@ -76,7 +76,10 @@ set -x
 		lftp -c "set ftp:ssl-allow yes; set ssl:verify-certificate false; set xfer:log 1; set xfer:log-file /tmp/lftp_leadhoop_path56.log; open -u path_56_dialer,Jts^.h.,Ws(3u~z\>?LxD upload.leadhoop.com; put -O / '/tmp/${OUT_FILENAME}'" &
 		
 		echo "relaying $1 to upload.providemedia.com" >> /tmp/ftp.log &
-		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp_providemedia.log; open -u YourDegreeHelper_796,@DUG#8Zd,]pf\`d}\\\\\\\"(\\\"/ upload.providemedia.com; put -O /success/new/  '/tmp/${OUT_FILENAME}'"
+		lftp -c "set ftp:ssl-allow no; set xfer:log 1; set xfer:log-file /tmp/lftp_providemedia.log; open -u YourDegreeHelper_796,@DUG#8Zd,]pf\`d}\\\\\\\"(\\\"/ upload.providemedia.com; put -O / '/tmp/${OUT_FILENAME}'" &
+
+		echo "relaying $1 to ftp.higheredgrowth.com (Path 56 Media)" >> /tmp/ftp.log &
+		lftp -c "set ftp:ssl-allow yes; set ssl:verify-certificate false; set ftp:ssl-protect-data true; set xfer:log 1; set xfer:log-file /tmp/lftp_highered_path56.log; open -u \"Path 56 Media\",E(bPr-TYg55,uL2* ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'"
 
 		rm /tmp/${OUT_FILENAME}
 		declare E_STATUS=sent
