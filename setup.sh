@@ -10,9 +10,14 @@ sudo useradd -g ftpgroup -d /dev/null -s /etc ftpuser
 
 sudo mkdir /home/ftpusers
 sudo mkdir /home/ftpusers/recordings
+sudo mkdir /home/ftpusers/recordings_success
 
 echo "Enter password for user: recordings"
 sudo pure-pw useradd recordings -u ftpuser -d /home/ftpusers/recordings
+
+echo "Enter password for user: recordings_success"
+sudo pure-pw useradd recordings_success -u ftpuser -d /home/ftpusers/recordings_success
+
 sudo pure-pw mkdb
 
 sudo ln -s /etc/pure-ftpd/pureftpd.passwd /etc/pureftpd.passwd

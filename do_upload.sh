@@ -1,6 +1,7 @@
 #!/bin/bash
 echo "`date -u`" >> /tmp/ftp.log
 echo " $1 has been received." >> /tmp/ftp.log
+echo " FTP Upload flag set to $2"
 #echo "`date -u` `aws s3 cp $1 s3://daypacer-incoming-recordings`" >> /tmp/ftp.log
 
 #declare REGEX="([a-z\/]+)?((recording\.)?([0-9]{10}|Unavailable)_?([0-9]{10}|Unavailable)?_([0-9A-Z]+)_([a-zA-Z0-9\-\@\._]+.[com|net|org])_([a-zA-Z0-9\ \_\-]+)_([0-9]+)_([0-9]+)_([0-9]+)(_([0-9]+)_([0-9]+)_([0-9]+) ([APM]+))?.wav)"
@@ -52,9 +53,8 @@ then
 
 	LENGTH=`sox "$1" -n stat 2>&1 | sed -n 's#^Length (seconds):[^0-9]*\([0-9.]*\)$#\1#p' | awk '{print int($1+0.5)}'`
 	echo "length is ${LENGTH}"
-	if (( ${LENGTH} >= 120 ))
+	if ([ ${LENGTH} -ge 120 ]  && [ $2 = true ])
 	then
-set -x
 		cp "$1" /tmp/${OUT_FILENAME}
 
 		echo "relaying $1 to ftp.higheredgrowth.com" >> /tmp/ftp.log &
