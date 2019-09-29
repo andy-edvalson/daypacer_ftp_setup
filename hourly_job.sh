@@ -13,6 +13,9 @@ declare MINUTE_DELAY=30
 declare CNS_REGEX="([a-z\/]+)CNS_([0-9-]+)_([0-9:\ AMP]+)_([0-9]+).wav"  # 1: Path  2: Date  3: Time  4: Phone
 declare CNS_S3_BUCKET="cns-recordings"
 
+echo "Running pre-parser"
+/usr/local/bin/pre_parse_files.sh $IN_PATH
+
 if [ ! -d $OUT_PATH ]
 then
   echo "Creating: $OUT_PATH"
@@ -27,9 +30,13 @@ echo "Beginning Hourly Job at `date`"
 find ${IN_PATH} -name "*.wav" -type f -mmin +${MINUTE_DELAY} | while read f
 do
 
+echo $f
+
   # if file still exists
   if [[ -f $f ]]
   then
+
+	echo $f
 
     if [[ $f =~ $CNS_REGEX ]]
     then
@@ -61,11 +68,12 @@ do
       if (( ${count} > 1 ))
       then
         # multipart call
+
         echo "${count} files found in call ${call}, merging files to staging dir" >> /tmp/stitch.log
         IFS=$'\n'
 	set -v
-        ls -tr ${IN_PATH} | grep ${call} >> /tmp/stitch.log
-	cd ${IN_PATH} && sox $(ls -tr ${IN_PATH} | grep ${call}) "${OUT_PATH}/${phone}_${ani}_${call}_${email}_${campaign}_${month}_${day}_${year}_${hour}_${minute}_${second} ${period}.wav"
+        ls -tr ${IN_PATH} | grep ${call} | sort >> /tmp/stitch.log
+	cd ${IN_PATH} && sox $(ls -tr ${IN_PATH} | grep ${call} | sort) "${OUT_PATH}/${phone}_${ani}_${call}_${email}_${campaign}_${month}_${day}_${year}_${hour}_${minute}_${second} ${period}.wav"
 	rm $(find ${IN_PATH} -name "*.wav" -type f | grep ${call})
       else
         # single part call
