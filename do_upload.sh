@@ -51,9 +51,9 @@ then
 	OUT_FILENAME="${phone}_000_${email}_${month}_${day}_${year}.wav"
 	echo "output filename for ftp is ${OUT_FILENAME}"
 
-	LENGTH=`sox "$1" -n stat 2>&1 | sed -n 's#^Length (seconds):[^0-9]*\([0-9.]*\)$#\1#p' | awk '{print int($1+0.5)}'`
+	#LENGTH=`sox "$1" -n stat 2>&1 | sed -n 's#^Length (seconds):[^0-9]*\([0-9.]*\)$#\1#p' | awk '{print int($1+0.5)}'`
 	echo "length is ${LENGTH}"
-	if ([ ${LENGTH} -ge 120 ]  && [ $2 = true ])
+	if ([ $2 = true ])
 	then
 		cp "$1" /tmp/${OUT_FILENAME}
 
@@ -82,35 +82,23 @@ then
 		lftp -c "set ftp:ssl-allow yes; set ssl:verify-certificate false; set ftp:ssl-protect-data true; set xfer:log 1; set xfer:log-file /tmp/lftp_highered_path56.log; open -u \"Path 56 Media\",E(bPr-TYg55,uL2* ftp.higheredgrowth.com; put -O / '/tmp/${OUT_FILENAME}'"
 
 		rm /tmp/${OUT_FILENAME}
-		declare E_STATUS=sent
 	else
-	   declare E_STATUS=too_short
-	   echo "Not sending $1 to edumax (too short)" >> /tmp/ftp.log
+	   echo "Not sending to ftp destinations (ftp out set to false)" >> /tmp/ftp.log
 	fi
 
         echo "moving $FILESPEC to /data/uploaded/$filename" >> /tmp/s3.log
 	mv "$FILESPEC" "/data/uploaded/$filename"
 
-	if (( ${LENGTH} >= 120 ))
+	if ([ $2 = true ])
 	then
  		output="s3://${S3_BUCKET}/Recordings/$year/$month/$day/$campaign/$filename"
        		echo "moving /data/uploaded/$filename to $output" >> /tmp/s3.log
         	${AWS_CLI} s3 cp "/data/uploaded/$filename" "$output" --no-progress >> /tmp/s3.log
-
-        	# Adding tagging
-#        	TAGGING="TagSet=[{Key=${EDUMAX_TAG_NAME},Value=${E_STATUS}}]"
-#        	${AWS_CLI} s3api put-object-tagging --bucket ${S3_BUCKET} --key "Recordings/$year/$month/$day/$campaign/$filename" --tagging "${TAGGING}" >> /tmp/s3.log
 	fi
 
  	output="s3://${S3_BUCKET_ALL}/Recordings/$year/$month/$day/$campaign/$filename"
        	echo "moving /data/uploaded/$filename to $output" >> /tmp/s3.log
         ${AWS_CLI} s3 cp "/data/uploaded/$filename" "$output" --no-progress >> /tmp/s3.log
-
-        # Adding tagging
- #       TAGGING="TagSet=[{Key=${EDUMAX_TAG_NAME},Value=${E_STATUS}}]"
- #       ${AWS_CLI} s3api put-object-tagging --bucket ${S3_BUCKET_ALL} --key "Recordings/$year/$month/$day/$campaign/$filename" --tagging "${TAGGING}" >> /tmp/s3.log
-
-
 fi
 
 echo "" >> /tmp/ftp.log
