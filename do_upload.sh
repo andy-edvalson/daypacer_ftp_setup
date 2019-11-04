@@ -67,10 +67,7 @@ if [[ $FILESPEC =~ $REGEX ]]; then
 	period="${BASH_REMATCH[16]}"
 
 	OUT_FILENAME="${phone}_000_${email}_${month}_${day}_${year}.wav"
-	OUT_FILENAME_CALL_ONLY="${call}.wav"
-
 	echo "output filename for ftp is ${OUT_FILENAME}"
-	echo "call-only filename for ftp is ${OUT_FILENAME_CALL_ONLY}"
 
 	echo "length is ${LENGTH}"
 	if ([ $2 = true ]); then
